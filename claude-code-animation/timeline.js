@@ -23,10 +23,6 @@ const T_FINISH = {
 };
 const HOLD = 4.4;            // both done, hold before the loop wrap
 const CYCLE = T_GREEN + TARGET.plain / 1000 + HOLD + 1.8;
-// the reduced-motion still: both panes finished, last line fully faded in,
-// veil still at 0 — one frame that tells the whole story without animating
-const T_STILL = T_FINISH.plain + 0.5;
-const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const GLYPHS = ['·', '✢', '✳', '∗', '✻', '✽'];
 
@@ -371,7 +367,9 @@ let botBeat = -1;
 function initBot() {
   const host = document.getElementById('raceBot');
   try {
-    bot = new Mascot(host, { variant: 'smol', autoMorph: false, respectReducedMotion: true });
+    // respectReducedMotion stays off: the OS Reduce Motion setting used to
+    // freeze the bot mid-show — the spot always plays (user request)
+    bot = new Mascot(host, { variant: 'smol', autoMorph: false });
   } catch (err) {
     console.warn('[race] mascot unavailable:', err);
   }
@@ -421,10 +419,11 @@ const urlT = new URLSearchParams(location.search).get('t');
 
 initBot();
 
-if (urlT !== null || REDUCED) {
-  // freeze-frame mode (?t=SECONDS), and the reduced-motion still — same
-  // path: one deterministic frame, no loop, arrows step ±0.25s if sought
-  let t = urlT !== null ? clamp(parseFloat(urlT) || 0, 0, CYCLE) : T_STILL;
+if (urlT !== null) {
+  // freeze-frame mode (?t=SECONDS): one deterministic frame, no loop, arrows
+  // step ±0.25s. The OS Reduce Motion setting no longer freezes the show —
+  // every plain reload plays the loop (user request).
+  let t = clamp(parseFloat(urlT) || 0, 0, CYCLE);
   document.body.classList.add('freeze');
   render(t);
   window.addEventListener('keydown', (ev) => {
