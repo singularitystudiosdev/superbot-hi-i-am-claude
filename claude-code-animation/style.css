@@ -1,8 +1,11 @@
-/* Claude Code race animation — tokens lifted from superbot.gg assets/site.css
-   (retrieved 2026-09-02) and race.css terminal/clock/mascot classes.
-   Two panes side by side: plain claude code vs /superbot. All motion is
-   computed in JS from t (see timeline.js) so frames are deterministic; no CSS
-   animations live on rebuilt DOM. */
+/* superbot pitch — "hi i am claude" remake. Tokens lifted from superbot.gg
+   assets/site.css (retrieved 2026-09-02); the bots are the site's own mascot
+   engine (mascot.js, taken directly from xdxdxd.dsh.sh — variant puff is the
+   benchmarks page's claude figure). Scenes: the wave intro, the claude code
+   terminal (refusal → denial → superbot flies in), the /superbot retry, the
+   cost gauntlet, TAKE YOUR PICK!, and the superbot.gg end card. All motion
+   is computed in JS from t (see timeline.js) so frames are deterministic;
+   no CSS animations live on rebuilt DOM. */
 
 :root {
   --bg: #050505;
@@ -14,6 +17,7 @@
   --stage: #0a0b0d;
   --accent: #7cb389;
   --danger: #c96f6f;
+  --claude: #d97757;
   --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
 }
 
@@ -41,162 +45,327 @@ body::before {
 
 .stage {
   position: relative;
-  width: min(1280px, 97vw);
-  height: clamp(500px, 78vh, 680px);
+  /* the whole spot is contained in a 4:3 box (user ask): aspect-ratio fixes
+     the shape, the width min keeps it inside the viewport on any screen */
+  width: min(1120px, 96vw, calc(92vh * 4 / 3));
+  aspect-ratio: 4 / 3;
   display: grid;
-  grid-template-rows: 40px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
 }
 
-.panes {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  min-height: 0;
+/* ---- the chat bubble (pixel-chatbox look, claude's clay orange) — left/
+   top set from t in JS, anchored above a sprite's head ---- */
+.bubble {
+  position: absolute; z-index: 6;
+  transform: translateX(-50%);
+  background: var(--claude);
+  border: 3px solid #7c3a24;
+  padding: 5px 12px 4px;
+  font-size: 13px; font-weight: 700; line-height: 17px;
+  color: #fff; white-space: nowrap;
+  box-shadow: 0 3px 0 #7c3a24, 0 0 18px rgba(217, 119, 87, .35);
+  opacity: 0; will-change: transform, opacity;
 }
-.pane {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--stage);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
+.bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -10px;
+  width: 9px; height: 9px; margin-left: -8px;
+  background: var(--claude);
+  border: 3px solid #7c3a24; border-top: none; border-left: none;
+  transform: rotate(45deg);
 }
-.pane.us { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
-
-/* ---- pane chrome ---- */
-.pane-bar {
-  display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
-  border-bottom: 1px solid var(--line); font-size: 11px; line-height: 16px;
-  color: var(--muted); white-space: nowrap; flex: none;
+/* left-side variant (user ask): the RIGHT edge anchors at `left`, tail
+   pointing back right at the sprite */
+.bubble.bubble-left { transform: translateX(-100%); transform-origin: 85% 50%; }
+.bubble.bubble-left::after {
+  left: auto; right: 10px; margin-left: 0;
+  border: 3px solid #7c3a24; border-top: none; border-right: none;
 }
-.pane-bar i { width: 7px; height: 7px; border-radius: 50%; flex: none; border: 1px solid var(--line); background: var(--raised); }
-.pane-bar span { margin-left: 6px; overflow: hidden; text-overflow: ellipsis; }
-
-/* the stopwatch: a dot that blinks while the pane runs, solid + glowing when
-   it stops (race.css); digits tabular so milliseconds do not jitter */
-.pane-bar .clock {
-  margin-left: auto; font-style: normal; display: inline-flex; align-items: center; gap: 6px;
-  font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--muted);
-}
-.pane.us .pane-bar .clock { color: var(--accent); }
-.pane-bar .clock::before {
-  content: ''; width: 6px; height: 6px; border-radius: 50%;
-  background: var(--muted); flex: none;
-}
-.pane.running .pane-bar .clock { color: var(--fg); }
-.pane.running .pane-bar .clock::before { background: var(--accent); opacity: .9; }
-.pane.done .pane-bar .clock::before {
-  background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent);
-}
-.pane.done .pane-bar .clock { color: var(--accent); font-weight: 600; }
-
-.statusbar {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 16px; border-top: 1px solid var(--line);
-  font-size: 11px; color: var(--muted); opacity: .75; flex: none; white-space: nowrap;
-}
-
-/* ---- terminal ---- */
-.term {
-  position: relative;
-  flex: 1; min-height: 0; overflow-y: hidden; overflow-x: hidden;
-  padding: 14px 16px 16px;
-  font-size: 12.5px; line-height: 20px;
-}
-.term-in { white-space: pre-wrap; overflow-wrap: anywhere; }
-
-/* prompt / user message */
-.p::before { content: '> '; color: var(--accent); }
-
-.cur::after { content: '▌'; color: var(--accent); }
-
-/* thinking line — dim italic, shimmer applied inline by JS */
-.think { color: var(--muted); opacity: .85; margin-top: 3px; }
-.think .glyph { display: inline-block; color: var(--accent); opacity: .8; width: 1.4em; }
-.think em {
-  font-style: italic;
-  background: linear-gradient(90deg, var(--muted) 32%, var(--fg) 50%, var(--muted) 68%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text; background-clip: text;
-  color: transparent;
-}
-
-/* steps / tool lines */
-.step { color: var(--muted); margin-top: 2px; }
-.step .dot {
-  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-  margin-right: 8px; vertical-align: 1px;
-  background: #3d3d38;
-}
-.step.running { color: color-mix(in srgb, var(--muted) 72%, transparent); }
-.step.running .dot { background: var(--accent); }
-
-.tline { color: var(--muted); margin-top: 2px; }
-.tline::before { content: '⏺ '; color: var(--muted); }
-
-.wait { color: var(--muted); opacity: .7; margin-top: 2px; }
-
-.tool { margin-top: 8px; }
-.tool .thead { color: var(--fg); }
-.tool .thead .tick { color: var(--muted); margin-right: 8px; }
-.tool .thead .fname { color: var(--accent); }
-.codebox {
-  margin: 8px 0 0 15px; padding: 10px 14px;
-  border: 1px solid var(--line); border-radius: 8px;
-  font-size: 12px; line-height: 18px; color: var(--muted);
-  white-space: pre-wrap; overflow-wrap: anywhere;
-}
-.wrote { color: var(--accent); margin: 8px 0 0 15px; }
-.wrote::before { content: '⎿ '; }
-
-.ok { color: var(--accent); margin-top: 10px; font-weight: 600; }
-.ok::before { content: '✓ '; }
-
-/* ---- /superbot pill (race.css .cmd) ---- */
-.cmd {
-  display: inline-block; color: var(--accent); font-weight: 700; letter-spacing: .01em;
+/* the /superbot prefix in the retry prompt: a subtle accent gradient with
+   the benchmarks site's ⚡ chip (race.css .cmd: tint fill, inset ring,
+   bolt) with the gallery's glow-breathe treatment (user ask: use glow
+   breathe in the animation). The chip is static CSS; the BREATHING
+   text-shadow is driven from t in JS — this span is rebuilt every frame,
+   so a CSS animation would restart with it. */
+.cmd-glow {
+  display: inline-block;
+  color: var(--accent); font-weight: 700; letter-spacing: .01em;
   padding: 0 6px; margin-right: 2px; border-radius: 6px;
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
-  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
 }
-.cmd.lit { }
-.cmd-typing { color: var(--accent); }
 
-/* ---- slash command menu ---- */
-.slash-menu {
-  position: absolute; left: 16px; right: 16px; top: 44px; z-index: 3;
+/* ---- the record button (user ask): fixed chrome OUTSIDE .stage so it
+   never rasterizes into the take; hidden in freeze-frame mode ---- */
+.rec-btn {
+  position: fixed; top: 18px; right: 18px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 999px;
+  background: var(--card); color: var(--fg);
+  border: 1px solid var(--line);
+  font: 700 13px/1 var(--font-mono); letter-spacing: .04em;
+  cursor: pointer; transition: border-color .15s, background-color .15s;
+}
+.rec-btn:hover { border-color: var(--accent); }
+.rec-btn .rec-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--danger); flex: none;
+}
+.rec-btn.recording { background: #1a0e0e; border-color: var(--danger); color: #fff; }
+.rec-btn.recording .rec-dot { background: var(--danger); animation: rec-blink 1s steps(2) infinite; }
+@keyframes rec-blink { 50% { opacity: .25; } }
+.rec-btn:disabled { opacity: .7; cursor: default; }
+.rec-hud {
+  display: none; position: fixed; bottom: 18px; left: 18px; z-index: 40;
+  align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+  background: rgba(20, 8, 8, .85); border: 1px solid var(--danger-line, #5c3030);
+  color: #fff; font: 700 12px/1 var(--font-mono);
+}
+.rec-hud .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--danger); animation: rec-blink 1s steps(2) infinite; }
+body.freeze .rec-btn { display: none; }
+
+/* ---- scene 1: the wave intro ---- */
+.intro {
+  position: absolute; inset: 0; z-index: 6;
+  display: grid; place-items: center;
+  background: var(--bg);
+  will-change: transform, opacity;
+}
+.intro-bot {
+  margin: 0;
+  font: clamp(10px, 1.7vw, 16px) / 1 var(--font-mono);
+  color: var(--claude);
+  pointer-events: none; user-select: none;
+  will-change: transform;
+}
+
+/* ---- scenes 2-4: the claude code terminal (lookalike of the site's .term
+   panes: dark card, traffic-light chrome, mono lines) ---- */
+/* while superbot runs (user ask): a super-light accent glow that EASES in
+   (--glow ramps from t over the retry's first 0.6s — the snap into the
+   green frame is gone), and two hairline beams riding the WHOLE border in
+   both directions — conic gradients masked to a 1.5px ring, their position
+   the --beam var, driven from t (Magic UI's border-beam, extended to the
+   full perimeter, counter-rotating) */
+.term.live {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) calc(var(--glow, 1) * 22%), var(--line)),
+    0 0 30px color-mix(in srgb, var(--accent) calc(var(--glow, 1) * 12%), transparent),
+    0 0 90px color-mix(in srgb, var(--accent) calc(var(--glow, 1) * 7%), transparent);
+}
+.term.live::before,
+.term.live::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: 3;
+}
+.term.live::before {
+  background: conic-gradient(from calc(var(--beam, 0) * 1turn),
+    transparent 0deg, transparent 316deg,
+    var(--accent) 336deg, #fff 344deg, var(--accent) 352deg, transparent 360deg);
+  opacity: var(--glow, 1);
+}
+.term.live::after {
+  background: conic-gradient(from calc(var(--beam, 0) * -1turn),
+    transparent 0deg, transparent 324deg,
+    var(--accent) 344deg, rgba(255, 255, 255, .7) 352deg, var(--accent) 356deg, transparent 360deg);
+  opacity: calc(var(--glow, 1) * 0.65);
+}
+.term {
+  position: absolute; z-index: 5;
+  left: 50%; top: 50%;
+  width: min(760px, 86%);
+  transform: translate(-50%, -50%);
+  background: var(--stage);
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px 18px 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .55);
+  will-change: transform, opacity;
+}
+.term { aspect-ratio: 16 / 10; }
+.term-chrome {
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 14px;
+}
+.term-chrome i {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #3a3a38;
+}
+.term-chrome i:first-child { background: #c96f6f; }
+.term-chrome span {
+  margin-left: 8px;
+  font-size: 11px; letter-spacing: .18em; color: var(--muted);
+}
+.term-body { display: flex; flex-direction: column; gap: 9px; }
+.term-line {
+  font-size: clamp(12px, 1.5vw, 15px); line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+  min-height: 1.5em;
+}
+.term-prompt { color: var(--fg); }
+.term-prompt .cursor { display: inline-block; width: .6em; }
+.term-note { color: var(--muted); }
+/* superbot's solving line (user ask: fast + cool): an accent braille
+   spinner, dim millis/percent tail, and a JS-pulsed accent glow */
+.term-note .sp { color: var(--accent); }
+.term-note .dim { color: var(--muted); }
+.term-ok { color: var(--accent); font-weight: 700; }
+.term-ok.deny { color: var(--danger); }
+/* the Claude Code tool-call presentation: accent dot, dim result line,
+   accent run line (user ask) */
+.term-code .cdot { color: var(--accent); }
+.term-code .sub { color: var(--muted); }
+.term-code .run { color: var(--accent); }
+.term-code .run .dim { color: var(--muted); }
+.term-bot {
+  position: absolute; margin: 0;
+  font: clamp(8px, 1.2vw, 11px) / 1 var(--font-mono);
+  pointer-events: none; user-select: none;
+  will-change: transform;
+}
+.term-bot-them { left: 16px; bottom: 14px; color: var(--claude); }
+.term-bot-us { right: 16px; bottom: 14px; color: #fff; filter: drop-shadow(0 0 14px rgba(255, 255, 255, .22)); }
+.term-say { z-index: 4; }
+.term-code {
+  margin: 6px 0 4px;
+  font: clamp(10px, 1.3vw, 13px) / 1.55 var(--font-mono);
+  color: #a8c7b1; white-space: pre-wrap;
+  border-left: 2px solid #2c3a31;
+  padding-left: 12px;
+  min-height: 0;
+}
+
+/* ---- scene 5: the cost gauntlet (same frame topic after topic) ---- */
+.bench {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 30px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  will-change: opacity;
+}
+.bench-title {
+  font-size: clamp(18px, 2.6vw, 30px); font-weight: 800; letter-spacing: .12em;
+  color: var(--fg); white-space: nowrap;
+  text-shadow: 0 0 26px color-mix(in srgb, var(--accent) 25%, transparent);
+  will-change: transform, opacity;
+}
+.bench-rows {
+  display: flex; flex-direction: column; gap: 26px;
+  width: min(780px, 82%);
+}
+.bench-row {
+  position: relative;
+  display: flex; align-items: center; gap: 20px;
+  will-change: transform, opacity;
+}
+.bench-bot {
+  flex: none; margin: 0;
+  font: clamp(7px, 1.1vw, 10px) / 1 var(--font-mono);
+  pointer-events: none; user-select: none;
+}
+#benchBotL { color: var(--claude); }
+#benchBotR { color: #fff; filter: drop-shadow(0 0 14px rgba(255, 255, 255, .22)); }
+.bench-track {
+  position: relative; flex: 1; height: 52px;
   background: var(--raised);
-  border: 1px solid var(--line); border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(0,0,0,.55);
-  padding: 4px; font-size: 12px; line-height: 18px;
+  border: 1px solid var(--line); border-radius: 9px;
 }
-.sm-row {
-  display: flex; justify-content: space-between; gap: 16px;
-  padding: 5px 10px; border-radius: 6px; color: var(--fg); white-space: nowrap; overflow: hidden;
+.bench-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  border-radius: 9px; will-change: width, filter;
 }
-.sm-row .sm-desc { color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
-.sm-row.sel { background: color-mix(in srgb, var(--accent) 14%, transparent); }
-.sm-row.sel .sm-cmd { color: var(--accent); font-weight: 700; }
+#fillClaude {
+  background: linear-gradient(90deg, #b35c3f, #d97757);
+  box-shadow: 0 0 26px rgba(217, 119, 87, .38);
+}
+#fillSuper {
+  background: linear-gradient(90deg, #5f9a6d, var(--accent));
+  box-shadow: 0 0 16px rgba(124, 179, 137, .3);
+}
+.bench-price {
+  position: absolute; top: 50%; left: 12px;
+  transform: translateY(-50%);
+  font-size: clamp(18px, 2.4vw, 28px); font-weight: 800; line-height: 1;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+  opacity: 0; will-change: transform, opacity;
+}
+#priceClaude {
+  color: #e8916b;
+  text-shadow: 0 0 20px color-mix(in srgb, #d97757 50%, transparent);
+}
+#priceSuper {
+  color: var(--accent);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+/* claude's fuzz-and-??? thoughts bubble */
+.bench-fuzz {
+  letter-spacing: .1em;
+  font-weight: 700;
+}
 
-/* ---- the mascot: bottom-right of the superbot pane (race.css .race-bot) ---- */
-.race-bot {
-  position: absolute; right: 12px; bottom: 8px; margin: 0; z-index: 1; pointer-events: none;
-  font: clamp(4px, .68vw, 7px) / 1 var(--font-mono); color: var(--fg); user-select: none;
-  filter: drop-shadow(0 0 12px rgba(124, 179, 137, .2));
+/* ---- scene 6: TAKE YOUR PICK! ---- */
+.pick {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 40px;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  will-change: opacity;
 }
-.pane.running .race-bot { filter: drop-shadow(0 0 16px rgba(124, 179, 137, .34)); }
+.pick-title {
+  font-size: clamp(26px, 3.8vw, 46px); font-weight: 800; letter-spacing: .1em;
+  color: var(--fg); white-space: nowrap;
+  text-shadow: 0 0 26px color-mix(in srgb, var(--accent) 25%, transparent);
+  will-change: transform, filter, opacity;
+}
+.pick-duo { display: flex; gap: clamp(40px, 8vw, 110px); align-items: flex-end; }
+.pick-side { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.pick-bot { margin: 0; font: clamp(9px, 1.5vw, 14px) / 1 var(--font-mono); pointer-events: none; user-select: none; will-change: transform; }
+.pick-side:first-child .pick-bot { color: var(--claude); }
+.pick-side:last-child .pick-bot { color: #fff; filter: drop-shadow(0 0 16px rgba(255, 255, 255, .24)); }
+.pick-tag { font-size: 12px; font-weight: 700; letter-spacing: .24em; }
+.tag-them { color: var(--claude); }
+.tag-us { color: var(--accent); }
 
-/* ---- start lights: their own row above the panes, so the tree never
-   covers either pane's clock; the row keeps its height after the start ---- */
-.lights {
-  display: flex; gap: 14px; align-items: center; justify-content: center;
-  align-self: center;
+/* ---- scene 7: the end card ---- */
+.endcard {
+  position: absolute; inset: 0; z-index: 5;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  will-change: opacity;
 }
-.bulb { width: 12px; height: 12px; border-radius: 50%; background: var(--raised); border: 1px solid var(--line); }
-.bulb.red { background: var(--danger); border-color: color-mix(in srgb, var(--danger) 60%, transparent); box-shadow: 0 0 10px color-mix(in srgb, var(--danger) 55%, transparent); }
-.bulb.green { background: var(--accent); border-color: color-mix(in srgb, var(--accent) 60%, transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 65%, transparent); }
+.endcard-bot {
+  position: absolute; left: 0; top: 0; z-index: 2;
+  margin: 0;
+  font: clamp(9px, 1.5vw, 14px) / 1 var(--font-mono);
+  color: #fff;
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, .26));
+  pointer-events: none; user-select: none;
+  will-change: transform;
+}
+/* the wordmark, matched to the site's: heavy rounded sans, "superbot"
+   white + ".gg" green */
+.endcard-word {
+  position: absolute; left: 0; top: 50%; z-index: 2;
+  font-family: "Arial Rounded MT Bold", ui-rounded, "Nunito", "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(30px, 4vw, 54px);
+  letter-spacing: -0.01em;
+  color: #fff;
+  opacity: 0;
+  will-change: transform, opacity, filter;
+}
+.endcard-word em { font-style: normal; color: var(--accent); }
 
 /* ---- loop veil + hint ---- */
 .veil {

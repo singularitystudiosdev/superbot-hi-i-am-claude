@@ -1,0 +1,5 @@
+.cosmos/
+.tmp/
+.tmp/
+claude-code-animation/.tmp/
+.DS_Store

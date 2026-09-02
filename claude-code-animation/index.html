@@ -3,44 +3,92 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>superbot · the race</title>
+<title>superbot · hi i am claude</title>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <main class="stage" aria-label="the race: claude code alone vs claude code with superbot">
-    <!-- drag-race start lights: red, red, red, green -->
-    <div class="lights" id="lights" aria-hidden="true">
-      <span class="bulb" id="bulb1"></span>
-      <span class="bulb" id="bulb2"></span>
-      <span class="bulb" id="bulb3"></span>
+  <main class="stage" aria-label="the pitch: the little claude bot waves — Hi I am Claude! / Everyone hates me! — then claude code: the prompt asks for a twitter scraper, claude calls it unsafe and the request is denied; superbot flies in and knocks claude off screen; the retry runs /superbot and superbot bypasses captchas, parses html with regex and ships a working tested scraper; the cost gauntlet follows (claude: fuzz and ??? thoughts, superbot happy); TAKE YOUR PICK!; then the superbot.gg end card">
+
+    <!-- scene 1: the little claude bot, centre, waving; the chat box above
+         his head types "Hi I am Claude!" then "Everyone hates me!" (user ask).
+         The bot is the site's own mascot engine (xdxdxd.dsh.sh mascot.js),
+         variant puff like the benchmarks page's claude figure. -->
+    <div class="intro" id="intro" aria-hidden="true">
+      <pre class="intro-bot" id="introBot"></pre>
+      <div class="bubble bubble-us" id="introSay"></div>
     </div>
 
-    <div class="panes">
+    <!-- scene 2+3: the claude code terminal — the prompt types in, claude
+         (in the pane) refuses ("That is unsafe!") and the request is denied;
+         superbot flies in from the right and knocks claude clean off screen.
+         From t. -->
+    <div class="term" id="term" aria-hidden="true" style="display:none">
+      <div class="term-chrome"><i></i><i></i><i></i><span>claude code</span></div>
+      <div class="term-body">
+        <div class="term-line term-prompt" id="termPrompt"></div>
+        <div class="term-line term-note" id="termNote"></div>
+        <pre class="term-code" id="termCode"></pre>
+        <div class="term-line term-ok" id="termOk"></div>
+      </div>
+      <pre class="term-bot term-bot-them" id="termBot"></pre>
+      <div class="bubble bubble-us term-say" id="termSay"></div>
+      <pre class="term-bot term-bot-us" id="flyBot"></pre>
+    </div>
 
-      <section class="pane" id="pane1" data-arm="plain" role="img" aria-label="claude code, plain: finished in 0:24.057 after 9 steps, with 2 failing tests">
-        <div class="pane-bar"><i></i><i></i><i></i><span>claude code</span><em class="clock" id="clock1">0:00.000</em></div>
-        <div class="term"><div class="term-in" id="in1"></div></div>
-        <div class="statusbar"><span>? for shortcuts</span><span>⧉ claude</span></div>
-      </section>
-
-      <section class="pane us" id="pane2" data-arm="super" role="img" aria-label="claude code with superbot: finished in 0:08.551 in 4 steps, tests passing">
-        <div class="pane-bar"><i></i><i></i><i></i><span>claude code · with superbot</span><em class="clock" id="clock2">0:00.000</em></div>
-        <div class="term">
-          <div class="slash-menu" id="slashMenu" hidden>
-            <div class="sm-row sel"><span class="sm-cmd">⚡ /superbot</span><span class="sm-desc">run through superbot's loop</span></div>
-            <div class="sm-row"><span class="sm-cmd">/config</span><span class="sm-desc">configure settings</span></div>
-            <div class="sm-row"><span class="sm-cmd">/help</span><span class="sm-desc">show help</span></div>
+    <!-- scene 5: the cost gauntlet — the same bar-comparison frame, topic
+         after topic; claude's bubble sits to his LEFT and cycles a rapid
+         panic litany (UNSAFE / THINKING / durr / …), superbot happy the
+         whole way (numbers from xdxdxd.dsh.sh/benchmarks,
+         retrieved 2026-09-02). From t. -->
+    <div class="bench" id="bench" aria-hidden="true" style="display:none">
+      <div class="bench-title" id="benchTitle">COST PER PROMPT</div>
+      <div class="bench-rows">
+        <div class="bench-row" id="benchSuper">
+          <pre class="bench-bot" id="benchBotR"></pre>
+          <div class="bench-track">
+            <div class="bench-fill" id="fillSuper"></div>
+            <div class="bench-price" id="priceSuper">¢70</div>
           </div>
-          <div class="term-in" id="in2"></div>
-          <pre class="race-bot" id="raceBot" aria-hidden="true"></pre>
         </div>
-        <div class="statusbar"><span>? for shortcuts</span><span>⧉ superbot</span></div>
-      </section>
-
+        <div class="bench-row" id="benchClaude">
+          <pre class="bench-bot" id="benchBotL"></pre>
+          <div class="bench-track">
+            <div class="bench-fill" id="fillClaude"></div>
+            <div class="bench-price" id="priceClaude">$10</div>
+          </div>
+        </div>
+      </div>
+      <div class="bubble bubble-us bubble-left bench-fuzz" id="benchFuzz"></div>
     </div>
+
+    <!-- scene 6: claude (in tears) parked next to superbot — TAKE YOUR PICK!
+         slams in. From t. -->
+    <div class="pick" id="pick" aria-hidden="true" style="display:none">
+      <div class="pick-title">TAKE YOUR PICK!</div>
+      <div class="pick-duo">
+        <div class="pick-side"><pre class="pick-bot" id="pickBotL"></pre><span class="pick-tag tag-them">claude</span></div>
+        <div class="pick-side"><pre class="pick-bot" id="pickBotR"></pre><span class="pick-tag tag-us">superbot</span></div>
+      </div>
+    </div>
+
+    <!-- scene 7: the superbot mascot lands beside the superbot.gg logo and
+         laughs on a cycle. From t. -->
+    <div class="endcard" id="endcard" aria-hidden="true" style="display:none">
+      <pre class="endcard-bot" id="endBot"></pre>
+      <div class="endcard-word" id="endWord">superbot<em>.gg</em></div>
+    </div>
+
     <div class="veil" id="veil" aria-hidden="true"></div>
   </main>
   <div class="hint" id="hint">↺ replay</div>
+
+  <!-- the recorder: outside .stage so it never appears in the take -->
+  <button class="rec-btn" id="recordBtn" type="button" aria-label="record the animation">
+    <span class="rec-dot"></span><span id="recordLabel">Record</span>
+  </button>
+  <div class="rec-hud" id="recHud" aria-hidden="true"><span class="rec-dot"></span><span id="recTime">0:00</span></div>
+
+  <script src="recorder.js"></script>
   <script type="module" src="timeline.js"></script>
 </body>
 </html>

@@ -1,0 +1,531 @@
+<!doctype html>
+<!-- /superbot effects gallery — a clean grid of treatments for the
+     /superbot prefix, each demonstrated on the real command line. Click a
+     card to preview it large in the hero. Static DOM, so CSS animations are
+     fine here (the no-keyframes rule is only for the spot's rebuilt DOM).
+     NO reduced-motion kill switch on purpose: this page is a motion demo —
+     with macOS Reduce Motion on it must still play (that bug shipped once).
+     Shippability rule (user ask): every variant must look alive while the
+     text stays readable — no mirrored tumbles, no glyph soup, no
+     invisible-off phases — and timings stay in one calm family. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>/superbot — pick your effect</title>
+<style>
+:root {
+  --bg: #050505;
+  --fg: #e8e4d9;
+  --muted: #8b8778;
+  --line: #232323;
+  --card: #101010;
+  --raised: #161616;
+  --stage: #0a0b0d;
+  --accent: #7cb389;
+  --claude: #d97757;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/22px var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 24px 80px; gap: 36px;
+}
+::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+header { text-align: center; }
+h1 { font-size: 22px; font-weight: 800; letter-spacing: .08em; }
+h1 em { font-style: normal; color: var(--accent); }
+header p { margin-top: 8px; color: var(--muted); font-size: 13px; }
+header a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--line); }
+header a:hover { color: var(--fg); }
+
+.hero {
+  width: min(860px, 94vw);
+  background: var(--stage);
+  border: 1px solid var(--line); border-radius: 14px;
+  padding: 34px 30px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .55);
+  text-align: center;
+}
+.hero .line { font-size: clamp(18px, 2.6vw, 26px); font-weight: 700; white-space: nowrap; overflow: hidden; }
+.hero .label { margin-top: 14px; font-size: 12px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+
+.grid {
+  width: min(1100px, 96vw);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.pick {
+  background: var(--card);
+  border: 1px solid var(--line); border-radius: 12px;
+  padding: 20px 20px 16px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit; color: inherit;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.pick:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+}
+.pick.chosen {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent), 0 10px 30px rgba(0, 0, 0, .4);
+}
+.pick .demo {
+  background: var(--stage);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px;
+  font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden;
+}
+.pick .demo .rest { color: var(--muted); font-weight: 400; }
+.pick .name { margin-top: 12px; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.pick .why { margin-top: 3px; font-size: 12px; color: var(--muted); }
+
+footer { color: var(--muted); font-size: 12px; text-align: center; }
+
+/* ============ the treatments — one calm family, all shippable ============ */
+.cmd { color: var(--fg); }
+.cmd .pfx { font-weight: 800; }
+
+/* 1 gradient sweep — accent→white sliding through the letters */
+.e-grad .pfx {
+  background-image: linear-gradient(90deg, var(--accent), var(--fg), var(--accent));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: fx-slide 4s linear infinite;
+}
+@keyframes fx-slide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+
+/* 2 shine — a masked bright band sweeps the glyphs */
+.e-shine .pfx { position: relative; color: color-mix(in oklab, var(--accent) 55%, var(--fg)); }
+.e-shine .pfx::after {
+  content: attr(data-text); position: absolute; inset: 0; color: transparent;
+  background: linear-gradient(100deg, transparent 35%, #fff 50%, transparent 65%);
+  background-size: 50% 100%; background-repeat: no-repeat;
+  -webkit-background-clip: text; background-clip: text;
+  animation: fx-sweep 2.2s cubic-bezier(.6, .6, 0, 1) infinite alternate;
+}
+@keyframes fx-sweep { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+
+/* 3 pulse — a soft breathing glow */
+.e-pulse .pfx { color: var(--accent); animation: fx-pulse 2s ease-in-out infinite; }
+@keyframes fx-pulse {
+  0%, 100% { text-shadow: 0 0 5px color-mix(in srgb, var(--accent) 25%, transparent); }
+  50% { text-shadow: 0 0 14px var(--accent), 0 0 30px color-mix(in srgb, var(--accent) 40%, transparent); }
+}
+
+/* 4 beam — a hairline of light travels under the prefix */
+.e-beam .pfx { position: relative; }
+.e-beam .pfx::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 1.5px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent) 45%, #fff 50%, var(--accent) 55%, transparent);
+  background-size: 40% 100%; background-repeat: no-repeat;
+  animation: fx-travel 2.4s linear infinite;
+}
+@keyframes fx-travel { from { background-position: -40% 0; } to { background-position: 140% 0; } }
+
+/* 5 neon — layered glow with a gentle hum */
+.e-neon .pfx { color: #d8ffe2; animation: fx-neon 2.6s ease-in-out infinite; }
+@keyframes fx-neon {
+  0%, 100% { text-shadow: 0 0 5px #fff, 0 0 14px var(--accent), 0 0 30px color-mix(in srgb, var(--accent) 70%, transparent); }
+  50% { text-shadow: 0 0 2px #fff, 0 0 8px var(--accent), 0 0 16px color-mix(in srgb, var(--accent) 70%, transparent); }
+}
+
+/* 6 cursor — a block caret blinking after the prefix, terminal-native */
+.e-cursor .pfx::after { content: '▊'; margin-left: .12em; color: var(--accent); animation: fx-blink 1.1s steps(1) infinite; }
+@keyframes fx-blink { 50% { opacity: 0; } }
+
+/* 7 typewriter — the prefix types itself and clears, caret riding the edge */
+.e-type .pfx {
+  display: inline-block; overflow: hidden; white-space: nowrap;
+  vertical-align: bottom; width: 9ch;
+  border-right: 2px solid var(--accent);
+  animation: fx-type 4.5s steps(9, end) infinite;
+}
+@keyframes fx-type {
+  0% { width: 0; }
+  45%, 70% { width: 9ch; }
+  100% { width: 0; }
+}
+
+/* 8 chip — the prefix boxed in a chip with its own traveling beam */
+.e-chip .pfx {
+  display: inline-block; padding: 3px 12px 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: 7px;
+  color: var(--accent); position: relative; overflow: hidden;
+}
+.e-chip .pfx::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, #fff 50%, transparent);
+  background-size: 50% 100%; background-repeat: no-repeat;
+  animation: fx-travel 2.2s linear infinite;
+}
+
+/* 9 wave — the letters bob, one after another (split by JS) */
+.e-wave .pfx b { display: inline-block; font-weight: inherit; color: var(--accent); animation: fx-wave 1.4s ease-in-out infinite; }
+@keyframes fx-wave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+/* 10 underglow — a pool of accent light breathing under the letters */
+.e-uglow .pfx { color: var(--fg); position: relative; }
+.e-uglow .pfx::before {
+  content: ''; position: absolute; left: -4px; right: -4px; bottom: -6px; height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 60%, transparent);
+  filter: blur(9px);
+  animation: fx-uglow 2s ease-in-out infinite;
+}
+@keyframes fx-uglow { 0%, 100% { opacity: .4; transform: scaleX(.94); } 50% { opacity: 1; transform: scaleX(1); } }
+
+/* 11 duo — claude clay → superbot green, both brands in one sweep */
+.e-duo .pfx {
+  background-image: linear-gradient(90deg, var(--claude), var(--accent), var(--fg), var(--accent), var(--claude));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: fx-slide 3.2s linear infinite;
+}
+
+/* 12 draw — an underline draws itself in, holds, redraws */
+.e-draw .pfx { position: relative; color: var(--fg); }
+.e-draw .pfx::after {
+  content: ''; position: absolute; left: 0; bottom: -4px; height: 1.5px; width: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  animation: fx-draw 2.8s ease-in-out infinite;
+}
+@keyframes fx-draw {
+  0% { transform: scaleX(0); }
+  40%, 60% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+/* 13 tilt — a slow pendulum sway */
+.e-tilt .pfx { display: inline-block; color: var(--fg); animation: fx-tilt 2.6s ease-in-out infinite; }
+@keyframes fx-tilt { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+
+/* 14 pop — a quiet scale pulse */
+.e-pop .pfx { display: inline-block; color: var(--accent); animation: fx-pop 2s ease-in-out infinite; }
+@keyframes fx-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+
+/* 15 focus — a slight blur that keeps resolving into focus */
+.e-focus .pfx { color: var(--fg); animation: fx-focus 2.4s ease-in-out infinite; }
+@keyframes fx-focus {
+  0%, 100% { filter: blur(1.4px); opacity: .8; }
+  55% { filter: blur(0); opacity: 1; }
+}
+
+/* 16 ghost — a soft brand-toned echo drifts behind the letters */
+.e-ghost .pfx { color: var(--fg); animation: fx-ghost 2.8s ease-in-out infinite; }
+@keyframes fx-ghost {
+  0%, 100% { text-shadow: 0 0 0 transparent; }
+  50% { text-shadow: -4px 0 0 color-mix(in srgb, var(--accent) 35%, transparent),
+                      4px 0 0 color-mix(in srgb, var(--claude) 22%, transparent); }
+}
+
+/* 17 aurora — soft green pastels sliding slowly through the letters */
+.e-aurora .pfx {
+  background-image: linear-gradient(90deg, #9ad0a8, #d6ead9, #7cb389, #c2decb, #9ad0a8);
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: fx-slide 7s linear infinite;
+}
+
+/* ============ the benchmarks family — pulled directly from
+   xdxdxd.dsh.sh/benchmarks (race.css .cmd chip, cmd-pop ring pulse,
+   sw-tick blink, the placeholder's 135° hatch, site.css focus ring and
+   nav pill, the .done clock glow, the solid .sb-btn). Statics marked. ==== */
+.fam {
+  width: min(1100px, 96vw);
+  margin-top: 8px;
+  font-size: 13px; color: var(--muted); text-align: center;
+}
+.fam b { color: var(--fg); font-weight: 700; }
+.fam a { color: var(--muted); }
+
+/* 1 canonical chip — race.css .cmd verbatim, static (the referent) */
+.e-bchip .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700; letter-spacing: .01em;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.e-bchip .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+
+/* 2 ring pulse — race.css cmd-pop, looped with a rest so it reads seamless */
+.e-blit .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+  animation: bx-pop 2.4s var(--ease-out, ease-out) infinite;
+}
+.e-blit .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+@keyframes bx-pop {
+  0% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); }
+  45% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 0 12px transparent; }
+  100% { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 0 0 transparent; }
+}
+
+/* 3 glow breathe — their chip glow + the .done clock glow, breathing */
+.e-bglow .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  animation: bx-glow 2.2s ease-in-out infinite;
+}
+.e-bglow .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+@keyframes bx-glow {
+  0%, 100% { text-shadow: 0 0 6px color-mix(in srgb, var(--accent) 30%, transparent); }
+  50% { text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
+}
+
+/* 4 sheen — a bright band sweeps the chip's letters */
+.e-bsheen .pfx {
+  display: inline-block; color: color-mix(in oklab, var(--accent) 65%, var(--fg)); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px; position: relative; overflow: hidden;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.e-bsheen .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+.e-bsheen .pfx::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, .5) 50%, transparent 65%);
+  background-size: 50% 100%; background-repeat: no-repeat;
+  animation: bx-sheen 2.6s cubic-bezier(.6, .6, 0, 1) infinite alternate;
+}
+@keyframes bx-sheen { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+
+/* 5 gradient — the accent fading to the page's ivory, sliding */
+.e-bgrad .pfx {
+  background-image: linear-gradient(90deg, var(--accent), var(--fg), var(--accent));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: fx-slide 3.6s linear infinite;
+}
+
+/* 6 outline — hollow accent letters (static) */
+.e-bline .pfx {
+  color: transparent; -webkit-text-stroke: 1px var(--accent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* 7 hatch — the placeholder's 135° stripes filling a chip, sliding */
+.e-bhatch .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  background: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--accent) 22%, transparent) 0 6px, transparent 6px 12px);
+  background-size: 17px 17px;
+  animation: bx-hatch 1.2s linear infinite;
+}
+.e-bhatch .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+@keyframes bx-hatch { to { background-position: 17px 0; } }
+
+/* 8 dot — their running-clock dot (sw-tick) blinking before the chip */
+.e-bdot .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.e-bdot .pfx::before {
+  content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px;
+  border-radius: 50%; background: var(--accent);
+  animation: bx-tick 1s steps(2) infinite;
+}
+@keyframes bx-tick { 50% { opacity: .25; } }
+
+/* 9 done — their .done clock: solid accent, one steady glow (static) */
+.e-bdone .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+              0 0 8px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.e-bdone .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+
+/* 10 ring — the site's own focus ring, breathing (site.css input:focus) */
+.e-bring .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  animation: bx-ring 2.4s ease-in-out infinite;
+}
+@keyframes bx-ring {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent); }
+  50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+}
+
+/* 11 pill — their nav pill's hover border, crossfading on a loop */
+.e-bpill .pfx {
+  display: inline-block; color: var(--muted); font-weight: 700;
+  padding: 2px 12px; margin-right: 2px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  animation: bx-pill 3s ease-in-out infinite;
+}
+@keyframes bx-pill {
+  0%, 100% { border-color: var(--line); color: var(--muted); }
+  50% { border-color: var(--accent); color: var(--accent); }
+}
+
+/* 12 tint — the chip's 14% fill breathing deeper */
+.e-btint .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  animation: bx-tint 2.2s ease-in-out infinite;
+}
+.e-btint .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+@keyframes bx-tint {
+  0%, 100% { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  50% { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+}
+
+/* 13 button — their solid .sb-btn primary (static) */
+.e-bbtn .pfx {
+  display: inline-block; padding: 2px 12px; margin-right: 2px;
+  border-radius: 6px; background: var(--accent); color: var(--accent-ink); font-weight: 700;
+}
+
+/* 14 underbar — an accent hairline under the prefix, breathing */
+.e-bundo .pfx {
+  position: relative; color: var(--accent); font-weight: 700;
+}
+.e-bundo .pfx::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -5px; height: 1.5px;
+  border-radius: 2px; background: var(--accent);
+  animation: bx-undo 2.4s ease-in-out infinite;
+}
+@keyframes bx-undo { 0%, 100% { opacity: .25; } 50% { opacity: 1; box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); } }
+
+/* 15 soft — plain accent letters with one steady glow (static) */
+.e-bsolid .pfx {
+  color: var(--accent);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* 16 streak — a 1px accent ring that orbits the chip (inset, seamless) */
+.e-bring2 .pfx {
+  display: inline-block; color: var(--accent); font-weight: 700;
+  padding: 0 6px; margin-right: 2px; border-radius: 6px; position: relative; overflow: hidden;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.e-bring2 .pfx::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, #fff 50%, transparent);
+  background-size: 50% 100%; background-repeat: no-repeat;
+  animation: fx-travel 2s linear infinite;
+}
+.e-bring2 .pfx::before { content: '⚡'; font-size: .85em; margin-right: 4px; opacity: .9; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><em>/superbot</em> — pick your effect</h1>
+  <p>Seventeen core treatments, then a family pulled straight from the benchmarks site. Click a card to preview it in the hero.</p>
+  <p><a href="index.html">← back to the spot</a></p>
+</header>
+
+<div class="hero">
+  <div class="line" id="heroLine">&gt; <span class="pfx" data-text="/superbot">/superbot</span> <span class="rest">Make me a scraper for twitter</span></div>
+  <div class="label" id="heroLabel">gradient sweep</div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="fam"><b>in the benchmarks style</b> — pulled directly from
+  <a href="https://xdxdxd.dsh.sh/benchmarks" target="_blank" rel="noopener">xdxdxd.dsh.sh/benchmarks</a>' own
+  race.css / site.css tokens: the ⚡ chip, its ring pulse, the clock glow, the hatch, the focus ring. Statics marked.</div>
+
+<div class="grid" id="gridBench"></div>
+
+<footer>every effect is plain CSS — drop the class onto the spot’s .cmd-glow span to use it there</footer>
+
+<script>
+const FX = [
+  ['grad',   'Gradient sweep', 'accent → white gradient slides through the letters (the spot’s current pick)'],
+  ['shine',  'Shine',          'a masked bright band sweeps across the glyphs'],
+  ['pulse',  'Pulse',          'a soft breathing accent glow'],
+  ['beam',   'Beam underline', 'a hairline of light travels under the prefix'],
+  ['neon',   'Neon',           'layered glow with a gentle hum'],
+  ['cursor', 'Cursor',         'a block caret blinking after the prefix'],
+  ['type',   'Typewriter',     'the prefix types itself and clears, caret on the edge'],
+  ['chip',   'Chip + beam',    'the prefix boxed in a chip with its own traveling beam'],
+  ['wave',   'Wave',           'the letters bob, one after another'],
+  ['uglow',  'Underglow',      'a pool of accent light breathing under the letters'],
+  ['duo',    'Duo gradient',   'claude clay → superbot green, both brands in one sweep'],
+  ['draw',   'Draw',           'an underline draws itself in, holds, redraws'],
+  ['tilt',   'Tilt',           'a slow pendulum sway'],
+  ['pop',    'Pop',            'a quiet scale pulse'],
+  ['focus',  'Focus',          'a slight blur that keeps resolving into focus'],
+  ['ghost',  'Ghost',          'a soft brand-toned echo drifts behind the letters'],
+  ['aurora', 'Aurora',         'soft green pastels sliding slowly through the letters'],
+];
+const FXB = [
+  ['bchip',  'The chip (static)',    'the site’s own .cmd badge, verbatim from race.css — bolt, tint, inset ring'],
+  ['blit',   'Ring pulse',           'the .lit pop from race.css, looped with a rest so it breathes'],
+  ['bglow',  'Glow breathe',         'the chip’s text-glow deepening, the .done clock treatment'],
+  ['bsheen', 'Chip sheen',           'a bright band sweeps the chip’s letters'],
+  ['bgrad',  'Accent gradient',      'accent fading to the page ivory, sliding'],
+  ['bline',  'Outline (static)',     'hollow accent letters with one soft shadow'],
+  ['bhatch', 'Hatch fill',           'the placeholder’s 135° stripes filling a chip, sliding'],
+  ['bdot',   'Running dot',          'the race clock’s sw-tick dot blinking before the chip'],
+  ['bdone',  'Done glow (static)',   'solid accent with the .done clock’s one steady glow'],
+  ['bring',  'Focus ring',           'the site’s input focus ring, expanding and fading'],
+  ['bpill',  'Nav pill',             'their nav pill’s hover border, crossfading on a loop'],
+  ['btint',  'Tint breathe',         'the chip’s 14% fill deepening and releasing'],
+  ['bbtn',   'Button (static)',      'their solid .sb-btn primary: accent on ink'],
+  ['bundo',  'Underline pulse',      'an accent hairline under the prefix, glowing in and out'],
+  ['bsolid', 'Soft (static)',        'plain accent letters with one steady text glow'],
+  ['bring2', 'Chip beam',            'the chip with a hairline of light riding its top edge'],
+];
+const say = () => `&gt; <span class="pfx" data-text="/superbot">/superbot</span> <span class="rest">Make me a scraper for twitter</span>`;
+let chosen = 'grad';
+
+// the wave variant: split the prefix into staggered per-letter spans
+const splitWave = (p) => {
+  p.innerHTML = [...p.textContent].map((ch, i) =>
+    `<b style="animation-delay:${(i * 100)}ms">${ch}</b>`).join('');
+};
+
+const makeCard = ([cls, name, why], mount) => {
+  const card = document.createElement('button');
+  card.className = `pick e-${cls}` + (cls === chosen ? ' chosen' : '');
+  card.innerHTML =
+    `<div class="demo line">${say()}</div>` +
+    `<div class="name">${name}</div>` +
+    `<div class="why">${why}</div>`;
+  if (cls === 'wave') splitWave(card.querySelector('.pfx'));
+  card.addEventListener('click', () => {
+    chosen = cls;
+    document.querySelectorAll('.pick').forEach(p => p.classList.remove('chosen'));
+    card.classList.add('chosen');
+    const hero = document.getElementById('heroLine');
+    hero.className = 'line e-' + cls;
+    hero.innerHTML = say();
+    if (cls === 'wave') splitWave(hero.querySelector('.pfx'));
+    document.getElementById('heroLabel').textContent = name.toLowerCase();
+  });
+  mount.appendChild(card);
+};
+FX.forEach(fx => makeCard(fx, document.getElementById('grid')));
+FXB.forEach(fx => makeCard(fx, document.getElementById('gridBench')));
+</script>
+</body>
+</html>

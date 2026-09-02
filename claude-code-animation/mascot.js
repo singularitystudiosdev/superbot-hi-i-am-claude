@@ -67,7 +67,7 @@ function sampleGrid(canvas, cols, rows, gamma = 1.0) {
 }
 
 // ---------- the superbot face, drawn parametrically ----------
-// expr: { eyeL, eyeR: 'open'|'wink'|'happy'|'closed', mouth: 'smile'|'grin'|'o'|'w',
+// expr: { eyeL, eyeR: 'open'|'wink'|'happy'|'closed'|'sad', mouth: 'smile'|'grin'|'o'|'w'|'sad',
 //         bob: -1..1, earTilt: -1..1, pupil: {x,y} -1..1 }
 // shape: proportion preset — see VARIANTS. All factors are relative to canvas size,
 // so every variant animates with the same expr machinery.
@@ -132,7 +132,7 @@ export const ANIMS = {
 };
 
 export function drawMascot(canvas, expr = {}, shape = {}) {
-  const { eyeL = 'open', eyeR = 'open', mouth = 'smile', bob = 0, earTilt = 0, pupil = { x: 0, y: 0 } } = expr;
+  const { eyeL = 'open', eyeR = 'open', mouth = 'smile', bob = 0, earTilt = 0, armDrop = 0, pupil = { x: 0, y: 0 } } = expr;
   const S = { ...BASE_SHAPE, ...shape };
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return; // canvas blocked outright — sampleGrid's guard turns this into a blank grid
@@ -156,10 +156,11 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
     }
   }
   if (S.arms) {
+    // armDrop (0..1) lets a sad stage let the nubs hang: lower and un-tilted
     ctx.fillStyle = '#8a8a8a';
     for (const s of [-1, 1]) {
       ctx.beginPath();
-      ctx.ellipse(cx + s * hw * 0.94, cy + hh * 0.12, hw * 0.2, hh * 0.3, s * 0.4, 0, Math.PI * 2);
+      ctx.ellipse(cx + s * hw * 0.94, cy + hh * (0.12 + armDrop * 0.3), hw * 0.2, hh * 0.3, s * (0.4 - armDrop * 0.3), 0, Math.PI * 2);
       ctx.fill();
     }
   }
@@ -206,10 +207,13 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
 
   const eyeY = cy + hh * S.eyeY, eyeDX = hw * S.eyeDX;
   const ew = hw * 0.17 * S.eyeScale, eh = hh * 0.22 * S.eyeScale * S.eyeTall;
-  const eye = (x, kind) => {
+  const eye = (x, kind, side = 0) => {
     ctx.beginPath();
     if (kind === 'open') {
       ctx.ellipse(x + pupil.x * hw * 0.08, eyeY + pupil.y * hh * 0.08, ew, eh, 0, 0, Math.PI * 2);
+    } else if (kind === 'sad') { // puppy eyes: smaller, riding lower, tops
+      // tipped outward-down (inner corners up) — sad without leaving cute
+      ctx.ellipse(x + pupil.x * hw * 0.06, eyeY + hh * 0.05 + pupil.y * hh * 0.06, ew * 0.85, eh * 0.85, side * 0.22, 0, Math.PI * 2);
     } else if (kind === 'wink' || kind === 'closed') {
       roundRectPath(ctx, x - ew * 1.25, eyeY - hh * 0.05, ew * 2.5, hh * 0.1, hh * 0.05);
     } else if (kind === 'happy') { // ^ shaped
@@ -222,8 +226,8 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
     }
     ctx.fill();
   };
-  eye(cx - eyeDX, eyeL);
-  eye(cx + eyeDX, eyeR);
+  eye(cx - eyeDX, eyeL, 1);   // sad tilt: tops tip toward the centre, inner
+  eye(cx + eyeDX, eyeR, -1);  // corners up — the puppy-eye ask
 
   // mouth — filled shapes only: a thin stroke averages away in the luminance
   // sampler and reads as nothing at glyph resolution. mouthScale 0 = mouthless
@@ -256,6 +260,17 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
   } else if (mouth === 'o') {
     ctx.ellipse(cx, mY - hh * 0.08, hw * 0.1 * mS, hh * 0.13 * mS, 0, 0, Math.PI * 2);
     ctx.fill();
+  } else if (mouth === 'sad') { // a drawn frown ): a shallow stroked
+    // quadratic — corners on the baseline, apex rising gently between
+    // them. Low on the face (clear of the eyes), short top-to-bottom, and
+    // round-capped so the edges stay smooth at glyph resolution.
+    const mScale = Math.max(mS, 1.1);
+    ctx.beginPath();
+    ctx.moveTo(cx - hw * 0.46 * mScale, mY + hh * 0.18);
+    ctx.quadraticCurveTo(cx, mY - hh * 0.22, cx + hw * 0.46 * mScale, mY + hh * 0.18);
+    ctx.lineWidth = hh * 0.3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
   } else if (mouth === 'w') { // cat mouth: two filled half-discs
     ctx.arc(cx - hw * 0.11 * mS, mY - hh * 0.12, hw * 0.12 * mS, 0, Math.PI);
     ctx.arc(cx + hw * 0.11 * mS, mY - hh * 0.12, hw * 0.12 * mS, Math.PI, 0, true);
@@ -271,6 +286,39 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
       ctx.ellipse(cx + s * hw * 0.64, eyeY + hh * 0.32, hw * 0.13, hh * 0.09, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+  }
+
+  // tears (0..1 intensity, user ask: claude actually cries): a bright
+  // streak runs from under each eye down over the head with a swelling
+  // drop at its tip — brighter than the head fill, so the stream samples
+  // as dense glyphs and reads as falling tears against the mid-gray body.
+  // tearsPhase (0..1) is the stream's cycle, driven from t by the caller
+  // so freeze-frames hold.
+  if (expr.tears > 0) {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#d8d8d8';
+    const topY = eyeY + eh * 0.6;
+    const fall = (cy + hh * 0.92) - topY;
+    const streams = expr.tears >= 1 ? 2 : 1;
+    const tw = Math.max(0.7, ew * 0.45); // stream half-width
+    for (const s of [-1, 1]) {
+      const ex = cx + s * eyeDX;
+      for (let k = 0; k < streams; k++) {
+        const ph = ((expr.tearsPhase ?? 0) + k / streams) % 1;
+        const dy = topY + fall * ph;
+        const fade = ph < 0.08 ? ph / 0.08 : ph > 0.85 ? (1 - ph) / 0.15 : 1;
+        ctx.globalAlpha = (expr.tears >= 1 ? 0.95 : 0.55) * Math.max(0, fade);
+        // the trail behind the tip
+        const from = topY + fall * Math.max(0, ph - 0.5);
+        ctx.fillRect(ex - tw, from, tw * 2, Math.max(0, dy - from));
+        // the drop bulb, swelling as it falls
+        const grow = 0.6 + 0.5 * Math.sin(Math.PI * Math.min(1, ph * 1.15));
+        ctx.beginPath();
+        ctx.ellipse(ex, dy, tw * grow + 0.5, tw * 1.5 * grow + 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   ctx.restore();
