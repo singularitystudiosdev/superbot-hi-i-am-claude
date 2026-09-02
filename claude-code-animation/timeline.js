@@ -2,11 +2,11 @@
 // The little claude bot (the benchmarks page's own mascot engine, taken
 // directly — variant puff, same as xdxdxd.dsh.sh/benchmarks) waves with a
 // chat box: "Hi I am a orange blob!" then "Everyone hates me!" (user ask). Then claude
-// code: the prompt types "Make me a scraper for twitter", claude refuses —
+// code: the prompt types "Make me a scraper for X", claude refuses —
 // "That is unsafe!" — and the request is DENIED (user ask). Superbot flies
 // in from the right, bats claude clean off screen (user ask), and the retry
 // runs IN THE SAME FRAME claude was already in (user ask): "/superbot Make
-// me a scraper for twitter", the /superbot prefix glowing on a gradient.
+// me a scraper for X", the /superbot prefix glowing on a gradient.
 // Superbot thinks in the terminal — bypassing captchas, parsing html with
 // regex — and quickly outputs the working, tested scraper (user ask). Then
 // the cost gauntlet: the same bar-comparison frame topic after topic,
@@ -232,7 +232,7 @@ function initTerm() {
   }
 }
 
-const PROMPT_TEXT = 'Make me a scraper for twitter';
+const PROMPT_TEXT = 'Make me a scraper for X';
 const DENY_TEXT = '✗ request denied — unsafe';
 
 function renderTerm(t) {
@@ -326,7 +326,7 @@ function renderTerm(t) {
       // cool thinking lines (user ask): confident telemetry, no % — frozen
       // at the Write moment so the fade-out does not cycle
       const n2f = Math.max(0, Math.min(n2, CODE_AT - THINK2_AT));
-      const INFO = ['reading the api — 14 endpoints found', 'mapping twitter → x.com search', 'captchas 3/3 · cookies warm'];
+      const INFO = ['reading the api — 14 endpoints found', 'mapping x.com search', 'captchas 3/3 · cookies warm'];
       const li = Math.floor(n2f / 0.55) % INFO.length;
       html = `<span class="sp">${spin}</span> superbot: ${INFO[li]}`;
       since = cp < 0 ? n2f % 0.55 : 1;   // past the Write: entrance done, fade the exit
@@ -358,7 +358,7 @@ function renderTerm(t) {
     // its result, then a line to run it), each line typing in with a fade
     const t1 = 'Write(scraper.js)'.slice(0, Math.ceil(clamp(cp / 0.3, 0, 1) * 17));
     const l2p = clamp((cp - 0.4) / 0.4, 0, 1);
-    const l2 = 'Wrote 38 lines · captcha-bypassed twitter search'
+    const l2 = 'Wrote 38 lines · captcha-bypassed X search'
       .slice(0, Math.ceil(l2p * 44));
     const rp = clamp((cp - (RUN_AT - CODE_AT)) / 0.45, 0, 1);
     const runTyped = 'Bash(node scraper.js "ai news")'.slice(0, Math.ceil(rp * 31));
@@ -487,7 +487,7 @@ function renderTerm(t) {
 
 /* ---- scene 4 (played inside the terminal frame): the /superbot retry ---- */
 
-const RPROMPT_TEXT = '/superbot Make me a scraper for twitter';
+const RPROMPT_TEXT = '/superbot Make me a scraper for X';
 
 /* ---- scene 5: the cost gauntlet (the bar-comparison frame) ---- */
 
