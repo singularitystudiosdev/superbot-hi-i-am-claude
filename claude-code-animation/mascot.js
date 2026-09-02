@@ -67,7 +67,8 @@ function sampleGrid(canvas, cols, rows, gamma = 1.0) {
 }
 
 // ---------- the superbot face, drawn parametrically ----------
-// expr: { eyeL, eyeR: 'open'|'wink'|'happy'|'closed', mouth: 'smile'|'grin'|'o'|'w',
+// expr: { eyeL, eyeR: 'open'|'wink'|'happy'|'closed'|'sad', mouth: 'smile'|'grin'|'o'|'w'|'sad'|'chomp',
+//         chomp: 0..1 (chomp openness), bob: -1..1, earTilt: -1..1, pupil: {x,y} -1..1 }
 //         bob: -1..1, earTilt: -1..1, pupil: {x,y} -1..1 }
 // shape: proportion preset — see VARIANTS. All factors are relative to canvas size,
 // so every variant animates with the same expr machinery.
@@ -219,6 +220,13 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
       ctx.lineTo(x + ew, eyeY + eh * 0.45);
       ctx.stroke();
       return;
+    } else if (kind === 'sad') { // inverted ^ — drooping, worried
+      ctx.lineWidth = hh * 0.1;
+      ctx.moveTo(x - ew, eyeY - eh * 0.45);
+      ctx.lineTo(x, eyeY + eh * 0.45);
+      ctx.lineTo(x + ew, eyeY - eh * 0.45);
+      ctx.stroke();
+      return;
     }
     ctx.fill();
   };
@@ -259,6 +267,14 @@ export function drawMascot(canvas, expr = {}, shape = {}) {
   } else if (mouth === 'w') { // cat mouth: two filled half-discs
     ctx.arc(cx - hw * 0.11 * mS, mY - hh * 0.12, hw * 0.12 * mS, 0, Math.PI);
     ctx.arc(cx + hw * 0.11 * mS, mY - hh * 0.12, hw * 0.12 * mS, Math.PI, 0, true);
+    ctx.fill();
+  } else if (mouth === 'sad') { // top half-disc = frown
+    ctx.arc(cx, mY + hh * 0.02, hw * 0.24 * mS, Math.PI, Math.PI * 2);
+    ctx.closePath();
+    ctx.fill();
+  } else if (mouth === 'chomp') { // wide-open mouth; openness via expr.chomp (0..1)
+    const o = expr.chomp ?? 1;
+    ctx.ellipse(cx, mY - hh * 0.02, hw * 0.24 * mS, hh * (0.06 + 0.3 * o) * mS, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 

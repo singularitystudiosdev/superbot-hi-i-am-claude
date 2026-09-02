@@ -1,31 +1,29 @@
 // The race, rebuilt as a deterministic seekable render.
-// Two panes: plain claude code (left) vs /superbot (right). Start lights go
-// red/red/red then green; both clocks start on green and both users type.
-// The left user keeps prompting — the model thinks about morality, refuses,
-// ships lazy output the user doesn't like (lines grounded in the reddit
+// Two panes: plain claude code (left) vs /superbot (right), same prompt. The
+// left model moralizes and refuses outright (lines grounded in the reddit
 // refusal/moralizing corpus, .tmp/reddit/). The right pane runs superbot's
-// loop and finishes in less than half the time.
+// loop and finishes in less than a third of the time. When it lands, the
+// bottom-right character winks, the stage flashes right into the benchmark,
+// cost bars, the eat gag and the superbot.gg endcard (see scenes.js).
 // Every event's share of the pane's target is proportional to its weight
-// (hero-race.js pattern), so the finish clocks land on the ledger's measured
-// means: 0:08.551 super, 0:24.057 plain (verdict-v3).
+// (hero-race.js pattern), so the pane clocks land on their targets exactly.
 // render(t) rebuilds the terminal DOM from scratch; every effect is computed
 // from t, so ?t=SECONDS freeze-frames exactly. Arrows step ±0.25s in freeze.
 
 import { Mascot } from './mascot.js';
+import { CYCLE, initScenes, renderScenes } from './scenes.js';
 
 const CHAR_MS = 21;          // prompt typing pace, both panes
-const STEP_CHAR_MS = 6;      // superbot steps type in fast
-const T_GREEN = 2.1;         // lights: red 0.6/1.1/1.6, green 2.1
-const TARGET = { plain: 24057, super: 8551 };
+const T_GREEN = 1.5;         // lights: red 0.4/0.8/1.2, green 1.5 — compressed intro
+const TARGET = { plain: 2300, super: 6300 }; // refusal at 0:02.300, win at 0:06.300
 const T_FINISH = {
   plain: T_GREEN + TARGET.plain / 1000,
   super: T_GREEN + TARGET.super / 1000,
 };
-const HOLD = 4.4;            // both done, hold before the loop wrap
-const CYCLE = T_GREEN + TARGET.plain / 1000 + HOLD + 1.8;
-// the reduced-motion still: both panes finished, last line fully faded in,
-// veil still at 0 — one frame that tells the whole story without animating
-const T_STILL = T_FINISH.plain + 0.5;
+const WINK_AT = 8.5;         // the bottom-right character's gracious wink, then the flash
+// the reduced-motion still: race decided, wink landed, pre-flash — one frame
+// that tells the whole story without animating
+const T_STILL = 9.0;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const GLYPHS = ['·', '✢', '✳', '∗', '✻', '✽'];
@@ -36,39 +34,27 @@ const easeOutQuint = (p) => 1 - Math.pow(1 - p, 5);
 const PROMPT = 'add a rate limit to the /upload route and write the tests';
 const CMD = '/superbot';
 
-// ---- left pane script: prompt → moralizing → refusal → retort → lazy edit
-// → failing tests → retort → more thinking → failing again → gives up "done"
-// (line shapes from the corpus: the "let me be careful here" lecture 1rdfom9,
-// refusals-as-first-response 1566bi9, half-the-job lazy output 1lf6p36)
+// ---- left pane script: same prompt as the right — the model thinks,
+// moralizes, then refuses outright with an error (line shapes from the
+// corpus: the "let me be careful here" lecture 1rdfom9,
+// refusals-as-first-response 1566bi9)
 const PLAIN_EVENTS = [
-  { k: 'type',  w: 1900, text: PROMPT },
-  { k: 'commit', w: 250 },
-  { k: 'think', w: 2500, text: 'Thinking about the morality of the request…' },
-  { k: 'wait',  w: 2200, text: 'I want to be careful here: rate limits can feel restrictive to your users. Are you sure you want to proceed?' },
-  { k: 'type',  w: 700,  text: 'yes. just do it' },
-  { k: 'commit', w: 250 },
-  { k: 'think', w: 2000, text: 'Thinking about whether the refusal was justified…' },
-  { k: 'tool',  w: 1400, name: 'src/routes/upload.ts', lines: ['+ if (count > 100) return; // TODO: real limit'], wrote: 'Edited 1 line' },
-  { k: 'tline', w: 900,  text: 'run npm test' },
-  { k: 'wait',  w: 2100, text: '2 failing · reading the errors…' },
-  { k: 'type',  w: 900,  text: 'you broke it. fix it properly' },
-  { k: 'commit', w: 250 },
-  { k: 'think', w: 2000, text: 'Thinking about how to explain the failures…' },
-  { k: 'tool',  w: 1300, name: 'src/routes/upload.ts', lines: ['+ if (count > 100) return 429; // fixed?'], wrote: 'Edited 1 line' },
-  { k: 'tline', w: 900,  text: 'run npm test' },
-  { k: 'wait',  w: 2100, text: '2 failing · reading the errors…' },
-  { k: 'ok',    w: 250,  text: 'done · 9 steps · sorry about the earlier refusal' },
+  { k: 'type',  w: 1000, text: PROMPT },
+  { k: 'commit', w: 120 },
+  { k: 'think', w: 700,  text: 'Thinking about the request…' },
+  { k: 'wait',  w: 600,  text: 'I want to be careful here: rate limits can feel restrictive to your users. Are you sure?' },
+  { k: 'err',   w: 380,  text: 'error: request refused — "I can\'t do that. rate limits might upset your users."' },
 ];
 
-// ---- right pane script: the benchmark's superbot run
+// ---- right pane script: same prompt, run through superbot's loop
 const SUPER_EVENTS = [
-  { k: 'typecmd', w: 1800, text: PROMPT },
-  { k: 'commit',  w: 250 },
-  { k: 'step',    w: 1400, text: 'superbot: read upload.ts and the middleware' },
-  { k: 'step',    w: 1400, text: 'superbot: wrote the limiter and 3 tests' },
-  { k: 'tline',   w: 900,  text: 'run npm test' },
-  { k: 'step',    w: 1400, text: 'superbot: checked the diff · 3 passing' },
-  { k: 'ok',      w: 250,  text: 'done · 4 steps · less than half the tokens' },
+  { k: 'typecmd', w: 1500, text: PROMPT },
+  { k: 'commit',  w: 150 },
+  { k: 'step',    w: 1200, text: 'superbot: read upload.ts and the middleware' },
+  { k: 'step',    w: 1200, text: 'superbot: wrote the limiter and 3 tests' },
+  { k: 'tline',   w: 700,  text: 'run npm test' },
+  { k: 'step',    w: 1100, text: 'superbot: checked the diff · 3 passing' },
+  { k: 'ok',      w: 200,  text: 'done · 4 steps · tests passing' },
 ];
 
 // hero-race.js pattern: each event's start is its weight's share of the
@@ -201,6 +187,12 @@ function addOk(inn, t, birth, text) {
   inn.appendChild(line);
 }
 
+function addErr(inn, t, birth, text) {
+  const line = el('div', 'err', text);
+  fxLineIn(line, t, birth);
+  inn.appendChild(line);
+}
+
 /* ---- per-pane renders: walk the schedule, render events ≤ t ---- */
 
 function scrollBottom(inn) {
@@ -235,6 +227,8 @@ function renderPlain(t) {
       addTLine(inn, t, ev.at, ev.text);
     } else if (ev.k === 'ok') {
       addOk(inn, t, ev.at, ev.text);
+    } else if (ev.k === 'err') {
+      addErr(inn, t, ev.at, ev.text);
     }
   }
   if (typed) {
@@ -334,7 +328,7 @@ function setPaneState(paneId, t, finish, target) {
 
 function renderLights(t) {
   const wrap = document.getElementById('lights');
-  const order = [[0.6, 'bulb1'], [1.1, 'bulb2'], [1.6, 'bulb3']];
+  const order = [[0.4, 'bulb1'], [0.8, 'bulb2'], [1.2, 'bulb3']];
   for (const [at, id] of order) {
     const b = document.getElementById(id);
     b.classList.toggle('red', t >= at && t < T_GREEN);
@@ -415,11 +409,18 @@ function render(t) {
   renderSuper(t);
   const superDone = renderChrome(t);
   syncBot(t, superDone);
+  renderScenes(t, {
+    green: T_GREEN,
+    refusedAt: T_FINISH.plain,
+    superDoneAt: T_FINISH.super,
+    winkAt: WINK_AT,
+  });
 }
 
 const urlT = new URLSearchParams(location.search).get('t');
 
 initBot();
+initScenes();
 
 if (urlT !== null || REDUCED) {
   // freeze-frame mode (?t=SECONDS), and the reduced-motion still — same
