@@ -1,4 +1,4 @@
-# V7 SPB VD
+# V2 SPB VD
 
 Cosmos created this folder for you. Ask the agent in the chat panel for
 what you want to build and it will write the files here.

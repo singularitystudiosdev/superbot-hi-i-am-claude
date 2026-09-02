@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>superbot · the race</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <main class="stage" aria-label="the race: claude code alone vs claude code with superbot">
+    <!-- drag-race start lights: red, red, red, green -->
+    <div class="lights" id="lights" aria-hidden="true">
+      <span class="bulb" id="bulb1"></span>
+      <span class="bulb" id="bulb2"></span>
+      <span class="bulb" id="bulb3"></span>
+    </div>
+
+    <div class="panes">
+
+      <section class="pane" id="pane1" data-arm="plain" role="img" aria-label="claude code, plain: finished in 0:24.057 after 9 steps, with 2 failing tests">
+        <div class="pane-bar"><i></i><i></i><i></i><span>claude code</span><em class="clock" id="clock1">0:00.000</em></div>
+        <div class="term"><div class="term-in" id="in1"></div></div>
+        <div class="statusbar"><span>? for shortcuts</span><span>⧉ claude</span></div>
+      </section>
+
+      <section class="pane us" id="pane2" data-arm="super" role="img" aria-label="claude code with superbot: finished in 0:08.551 in 4 steps, tests passing">
+        <div class="pane-bar"><i></i><i></i><i></i><span>claude code · with superbot</span><em class="clock" id="clock2">0:00.000</em></div>
+        <div class="term">
+          <div class="slash-menu" id="slashMenu" hidden>
+            <div class="sm-row sel"><span class="sm-cmd">⚡ /superbot</span><span class="sm-desc">run through superbot's loop</span></div>
+            <div class="sm-row"><span class="sm-cmd">/config</span><span class="sm-desc">configure settings</span></div>
+            <div class="sm-row"><span class="sm-cmd">/help</span><span class="sm-desc">show help</span></div>
+          </div>
+          <div class="term-in" id="in2"></div>
+          <pre class="race-bot" id="raceBot" aria-hidden="true"></pre>
+        </div>
+        <div class="statusbar"><span>? for shortcuts</span><span>⧉ superbot</span></div>
+      </section>
+
+    </div>
+    <div class="veil" id="veil" aria-hidden="true"></div>
+  </main>
+  <div class="hint" id="hint">↺ replay</div>
+  <script type="module" src="timeline.js"></script>
+</body>
+</html>
