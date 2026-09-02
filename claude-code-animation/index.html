@@ -8,82 +8,36 @@
 </head>
 <body>
   <main class="stage" aria-label="the race: claude code alone vs claude code with superbot">
-
-    <div class="scene" id="raceScene">
-      <!-- drag-race start lights: red, red, red, green -->
-      <div class="lights" id="lights" aria-hidden="true">
-        <span class="bulb" id="bulb1"></span>
-        <span class="bulb" id="bulb2"></span>
-        <span class="bulb" id="bulb3"></span>
-      </div>
-
-      <div class="panes">
-
-        <section class="pane" id="pane1" data-arm="plain" role="img" aria-label="claude code, plain: moralized, then refused outright in 0:02.300">
-          <div class="pane-bar"><i></i><i></i><i></i><span>claude code</span><em class="clock" id="clock1">0:00.000</em></div>
-          <div class="term"><div class="term-in" id="in1"></div></div>
-          <div class="statusbar"><span>? for shortcuts</span><span>⧉ claude</span></div>
-        </section>
-
-        <section class="pane us" id="pane2" data-arm="super" role="img" aria-label="claude code with superbot: finished in 0:06.300 in 4 steps, tests passing">
-          <div class="pane-bar"><i></i><i></i><i></i><span>claude code · with superbot</span><em class="clock" id="clock2">0:00.000</em></div>
-          <div class="term">
-            <div class="slash-menu" id="slashMenu" hidden>
-              <div class="sm-row sel"><span class="sm-cmd">⚡ /superbot</span><span class="sm-desc">run through superbot's loop</span></div>
-              <div class="sm-row"><span class="sm-cmd">/config</span><span class="sm-desc">configure settings</span></div>
-              <div class="sm-row"><span class="sm-cmd">/help</span><span class="sm-desc">show help</span></div>
-            </div>
-            <div class="term-in" id="in2"></div>
-            <pre class="race-bot" id="raceBot" aria-hidden="true"></pre>
-          </div>
-          <div class="statusbar"><span>? for shortcuts</span><span>⧉ superbot</span></div>
-        </section>
-
-      </div>
-
-      <!-- the duel: superbot left, claude right, under every comparison frame -->
-      <div class="duel" aria-hidden="true">
-        <pre class="duel-bot bot-super" id="duelL"></pre>
-        <div class="vs">VS</div>
-        <pre class="duel-bot bot-claude" id="duelR"></pre>
-      </div>
+    <!-- drag-race start lights: red, red, red, green -->
+    <div class="lights" id="lights" aria-hidden="true">
+      <span class="bulb" id="bulb1"></span>
+      <span class="bulb" id="bulb2"></span>
+      <span class="bulb" id="bulb3"></span>
     </div>
 
-    <section class="scene overlay" id="benchmark" aria-label="benchmark: frontier models, score vs cost">
-      <div class="bench-head">avg benchmark score · vs · average cost per task</div>
-      <div class="bench-wrap" id="benchWrap"></div>
-    </section>
+    <div class="panes">
 
-    <section class="scene overlay" id="cost" aria-label="cost per task: superbot 92 cents, fable 5.1 9 dollars 90">
-      <div class="cost-rows">
-        <div class="cost-row super">
-          <span class="cost-name">superbot</span>
-          <div class="cost-track"><div class="cost-fill fill-super" id="barSuper"></div></div>
-          <span class="cost-val" id="valSuper">$0.00</span>
+      <section class="pane" id="pane1" data-arm="plain" role="img" aria-label="claude code, plain: finished in 0:24.057 after 9 steps, with 2 failing tests">
+        <div class="pane-bar"><i></i><i></i><i></i><span>claude code</span><em class="clock" id="clock1">0:00.000</em></div>
+        <div class="term"><div class="term-in" id="in1"></div></div>
+        <div class="statusbar"><span>? for shortcuts</span><span>⧉ claude</span></div>
+      </section>
+
+      <section class="pane us" id="pane2" data-arm="super" role="img" aria-label="claude code with superbot: finished in 0:08.551 in 4 steps, tests passing">
+        <div class="pane-bar"><i></i><i></i><i></i><span>claude code · with superbot</span><em class="clock" id="clock2">0:00.000</em></div>
+        <div class="term">
+          <div class="slash-menu" id="slashMenu" hidden>
+            <div class="sm-row sel"><span class="sm-cmd">⚡ /superbot</span><span class="sm-desc">run through superbot's loop</span></div>
+            <div class="sm-row"><span class="sm-cmd">/config</span><span class="sm-desc">configure settings</span></div>
+            <div class="sm-row"><span class="sm-cmd">/help</span><span class="sm-desc">show help</span></div>
+          </div>
+          <div class="term-in" id="in2"></div>
+          <pre class="race-bot" id="raceBot" aria-hidden="true"></pre>
         </div>
-        <div class="cost-row">
-          <span class="cost-name">fable 5.1</span>
-          <div class="cost-track"><div class="cost-fill fill-fable" id="barFable"></div></div>
-          <span class="cost-val" id="valFable">$0.00</span>
-        </div>
-      </div>
-    </section>
+        <div class="statusbar"><span>? for shortcuts</span><span>⧉ superbot</span></div>
+      </section>
 
-    <section class="scene overlay" id="eat" aria-hidden="true">
-      <pre class="eat-bot" id="eatL"></pre>
-      <pre class="eat-bot" id="eatR"></pre>
-    </section>
-
-    <section class="scene overlay" id="logo" aria-label="superbot.gg">
-      <div class="logo-in">
-        <img class="logo-mark" id="logoMark" src="superbot-mark.svg" alt=""/>
-        <div class="logo-word">superbot<span class="gg">.gg</span></div>
-        <div class="logo-tag">the agent that helps your agents.</div>
-        <div class="logo-url">superbot.gg</div>
-      </div>
-    </section>
-
-    <div class="flash" id="flash" aria-hidden="true"></div>
+    </div>
     <div class="veil" id="veil" aria-hidden="true"></div>
   </main>
   <div class="hint" id="hint">↺ replay</div>
