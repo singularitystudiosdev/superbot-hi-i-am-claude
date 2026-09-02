@@ -1,7 +1,7 @@
 // The pitch, "hi i am claude" remake — a deterministic seekable render.
 // The little claude bot (the benchmarks page's own mascot engine, taken
 // directly — variant puff, same as xdxdxd.dsh.sh/benchmarks) waves with a
-// chat box: "Hi I am Claude!" then "Everyone hates me!" (user ask). Then claude
+// chat box: "Hi I am a orange blob!" then "Everyone hates me!" (user ask). Then claude
 // code: the prompt types "Make me a scraper for twitter", claude refuses —
 // "That is unsafe!" — and the request is DENIED (user ask). Superbot flies
 // in from the right, bats claude clean off screen (user ask), and the retry
@@ -23,7 +23,7 @@ const SPEED = 1.15;          // the whole show plays ~15% faster (user ask)
 
 /* ---- scene 1: the wave intro ---- */
 const T_INTRO = 4.6;         // wave + the two chat-box lines, +0.4s hold (user ask)
-const SAY1_AT = 0.5;         // intro-local: "Hi I am Claude!" types in
+const SAY1_AT = 0.5;         // intro-local: "Hi I am a orange blob!" types in
 const SAY1_LEN = 1.1;
 const SWAP_AT = 2.5;         // intro-local: it swaps to "Everyone hates me!"
 const SAY2_LEN = 1.1;
@@ -160,7 +160,7 @@ function initIntro() {
   }
 }
 
-const INTRO_SAY1 = 'Hi I am Claude!';
+const INTRO_SAY1 = 'Hi I am a orange blob!';
 const INTRO_SAY2 = 'Everyone hates me!';
 
 function renderIntro(t) {
